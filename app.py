@@ -12,11 +12,11 @@ if url:
     with st.spinner("🐾 Sniffing around the page..."):
         try:
             sections, starter_script = suggest_tests(url)
-
+            
             st.subheader("🐺 Suggested Tests")
             for section, tests in sections.items():
                 with st.expander(f"📂 {section}"):
-                    for test_title, test_description, snippet in tests:
+                    for test_title, test_description, snippet, strategy in tests:
                         st.markdown(f"**{test_title}**: {test_description}")
                         st.code(snippet, language="python")
 
