@@ -1,6 +1,7 @@
 absl-py==2.2.2
 altair==5.5.0
 astunparse==1.6.3
+beautifulsoup4
 blinker==1.9.0
 cachetools==5.5.2
 click==8.1.8
@@ -36,6 +37,7 @@ pydeck==0.9.1
 pyee==12.1.1
 pyparsing==3.2.3
 pytz==2025.2
+requests
 scikit-learn==1.6.1
 scipy==1.15.2
 smmap==5.0.2

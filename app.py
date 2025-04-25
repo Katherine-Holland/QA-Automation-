@@ -1,10 +1,15 @@
 import streamlit as st
 from run_tests import run_tests
+from suggest_tests import suggest_tests
 
-st.set_page_config(layout="wide", page_title="Playwright QA Demo")
-st.title("🔐 Login Flow QA Test")
+# Streamlit setup
+st.set_page_config(layout="wide", page_title="Netflix QA Demo")
+st.title("🎬 Netflix QA Demo: Automated QA Scripts")
 
-if st.button("▶️ Run Script"):
+# --- SECTION 1: Run Playwright tests
+st.header("▶️ Automated Playwright QA Tests")
+
+if st.button("Run Tests"):
     with st.spinner("Running Playwright tests..."):
         results = run_tests()
 
@@ -17,3 +22,18 @@ if st.button("▶️ Run Script"):
     with st.expander("Show Playwright Test Code"):
         with open("run_tests.py", "r") as f:
             st.code(f.read(), language="python")
+
+
+# --- SECTION 2: Suggest New Tests
+st.header("💡 Suggest QA Tests From a Web Page")
+
+url = st.text_input("Enter a page URL to analyze:")
+if st.button("Suggest QA Tests"):
+    if url:
+        with st.spinner("Scraping page and suggesting tests..."):
+            suggested_tests = suggest_tests(url)
+            for i, (description, code_snippet) in enumerate(suggested_tests, 1):
+                st.markdown(f"**Test {i}: {description}**")
+                st.code(code_snippet, language="python")
+    else:
+        st.warning("Please enter a valid URL before running suggestions!")
