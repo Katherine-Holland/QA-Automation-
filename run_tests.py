@@ -7,7 +7,7 @@ def run_tests():
         browser = p.chromium.launch(headless=True)
         context = browser.new_context()
         page = context.new_page()
-        context.set_default_timeout(5000)
+        context.set_default_timeout(20000)
 
         # ARRANGE: Go to Netflix and go to login
         page.goto("https://netflix.com")
