@@ -13,8 +13,7 @@ if st.button("▶️ Run Script"):
     # Display results
     st.subheader("✅ Test Results")
     for name, result in results:
-        status = "✅ Passed" if result else "❌ Failed - Manual review needed"
-        st.markdown(f"- **{name}**: {status}")
+        st.markdown(f"- **{name}**: {result}")
 
     # Show the script as a reference
     st.subheader("📜 Script Summary")
