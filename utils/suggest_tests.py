@@ -1,5 +1,3 @@
-# utils/suggest_tests.py
-
 import requests
 from bs4 import BeautifulSoup
 
