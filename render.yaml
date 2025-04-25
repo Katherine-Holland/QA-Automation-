@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: playwright-streamlit-app
+    plan: free
+    dockerfilePath: ./Dockerfile
+    branch: main
+    autoDeploy: true
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
