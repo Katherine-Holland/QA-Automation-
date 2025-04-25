@@ -3,91 +3,53 @@ from bs4 import BeautifulSoup
 
 def suggest_tests(url):
     suggestions = []
-    generated_test_code = []
     
+    if not url.startswith("http"):
+        url = "https://" + url
+
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    forms = soup.find_all('form')
-    inputs = soup.find_all('input')
-    buttons = soup.find_all('button')
-    links = soup.find_all('a')
-    headings = soup.find_all(['h1', 'h2', 'h3'])
+    # Detect forms
+    if soup.find('form'):
+        suggestions.append(("Form detected", "Test valid and invalid form submissions."))
 
-    # --- Suggest tests ---
-    if forms:
-        suggestions.append("✅ Form detected – Suggest testing valid and invalid form submissions.")
+    # Inputs
+    for input_tag in soup.find_all('input'):
+        name = input_tag.get('name') or input_tag.get('id') or 'unnamed'
+        itype = input_tag.get('type', 'text')
+        if itype in ['email', 'password', 'text']:
+            suggestions.append((f"Test input field '{name}'", f"Validate {itype} input handling."))
 
-    for input_field in inputs:
-        name = input_field.get('name') or input_field.get('id') or 'unknown'
-        input_type = input_field.get('type', 'text')
-        if input_type in ['email', 'password', 'text']:
-            suggestions.append(f"📌 Input field '{name}' (type: {input_type}) – Suggest input validation test.")
-            generated_test_code.append(f"""# Arrange
-page.fill('[name="{name}"]', 'test input')
+    # Buttons
+    for button in soup.find_all('button'):
+        label = button.text.strip() or button.get('aria-label') or 'Unnamed Button'
+        suggestions.append((f"Click button '{label}'", f"Ensure button '{label}' performs expected action."))
 
-# Act
-# (Submit form or proceed)
+    # Links
+    for link in soup.find_all('a', href=True):
+        if link.text.strip():
+            suggestions.append((f"Test navigation link '{link.text.strip()}'", f"Click link and verify page change."))
 
-# Assert
-# (Check for success/failure message)
-""")
-
-    for btn in buttons:
-        label = btn.text.strip() or btn.get('aria-label') or 'Unnamed Button'
-        if label != 'Unnamed Button':
-            suggestions.append(f"🧪 Button '{label}' – Suggest click test.")
-            generated_test_code.append(f"""# Arrange
-
-# Act
-page.get_by_role("button", name="{label}").click()
-
-# Assert
-# (Check page navigated or success message appeared)
-""")
-
-    for link in links:
-        href = link.get('href')
-        if href and not href.startswith('#'):
-            text = link.text.strip()
-            if text:
-                suggestions.append(f"🔗 Link '{text}' – Suggest navigation test.")
-                generated_test_code.append(f"""# Arrange
-
-# Act
-page.get_by_role("link", name="{text}").click()
-
-# Assert
-# (Check URL or page title)
-""")
-
-    for heading in headings:
-        level = heading.name
-        text = heading.text.strip()
-        if text:
-            suggestions.append(f"📝 Heading ({level}): '{text}' – Suggest content visibility test.")
-            generated_test_code.append(f"""# Arrange
-
-# Act
-
-# Assert
-page.get_by_role("heading", name="{text}").is_visible()
-""")
-
-    # --- Sample Playwright starter ---
-    starter = f"""
-# Example Playwright script
+    # Sample test code with ARRANGE / ACT / ASSERT
+    sample_test = f'''
+# 🧪 Example starter test for {url}
 from playwright.sync_api import sync_playwright
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
+
+    # ARRANGE
     page.goto("{url}")
 
-    # --- Suggested Actions ---
-""" + "\n".join(generated_test_code) + """
+    # ACT
+    page.click('text="Get Started"')  # Adjust this selector
+
+    # ASSERT
+    assert page.url != "{url}", "Page did not navigate!"
 
     browser.close()
-"""
+'''
 
-    return suggestions, starter
+    return suggestions, sample_test
