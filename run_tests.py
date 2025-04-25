@@ -1,5 +1,4 @@
 from playwright.sync_api import sync_playwright, expect
-from utils.helpers import dismiss_netflix_popups
 
 def run_tests():
     results = []
@@ -8,43 +7,32 @@ def run_tests():
         browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
         context = browser.new_context()
         page = context.new_page()
-        context.set_default_timeout(20000)
+        context.set_default_timeout(10000)
 
-        # === TEST 1: Invalid Email ===
         # ARRANGE
-        page.goto("https://netflix.com")
-        dismiss_netflix_popups(page)
-        page.locator('a[href="/login"]').click()
+        page.goto("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
+        page.wait_for_selector('input[name="username"]')
 
-        # ACT
-        page.locator('input[name="userLoginId"]').fill("invalidemail@email.com")
-        page.locator('input[name="password"]').fill("invalidpassword")
-        page.locator('[data-uia="sign-in-button"][role="button"]').click()
-
-        # ASSERT
+        # TEST 1: Invalid login
         try:
-            expect(page.get_by_text("Incorrect password for")).to_be_visible()
-            results.append(("❌ Invalid Email / Password", "✅ PASS"))
-        except:
-            results.append(("❌ Invalid Email / Password", "❌ FAIL"))
+            page.fill('input[name="username"]', 'invalid_user')
+            page.fill('input[name="password"]', 'wrong_password')
+            page.click('button[type="submit"]')
+            expect(page.locator(".oxd-alert-content-text")).to_have_text("Invalid credentials")
+            results.append(("Invalid Login Test", True))
+        except Exception:
+            results.append(("Invalid Login Test", False))
 
-        # === TEST 2: Toggle Eye Icon Visibility ===
-        # ARRANGE
-        page.goto("https://netflix.com")
-        dismiss_netflix_popups(page)
-        page.locator('a[href="/login"]').click()
-        page.locator('[name="password"][data-uia="field-password"]').fill("mypassword")
-
-        # ACT & ASSERT
+        # TEST 2: Valid login
         try:
-            page.locator('[data-uia="icon-button"]').click()
-            revealed_value = page.locator('[name="password"][data-uia="field-password"]').input_value()
-            if revealed_value == "mypassword":
-                results.append(("👁️ Toggle Eye Icon Visibility", "✅ PASS"))
-            else:
-                results.append(("👁️ Toggle Eye Icon Visibility", "❌ FAIL (not revealed)"))
-        except:
-            results.append(("👁️ Toggle Eye Icon Visibility", "❌ FAIL (exception)"))
+            page.fill('input[name="username"]', 'Admin')
+            page.fill('input[name="password"]', 'admin123')
+            page.click('button[type="submit"]')
+            page.wait_for_selector('h6.oxd-topbar-header-breadcrumb-module')
+            expect(page.locator('h6.oxd-topbar-header-breadcrumb-module')).to_have_text("Dashboard")
+            results.append(("Valid Login Test", True))
+        except Exception:
+            results.append(("Valid Login Test", False))
 
         browser.close()
     return results
