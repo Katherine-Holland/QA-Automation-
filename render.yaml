@@ -1,10 +1,9 @@
 services:
   - type: web
-    name: playwright-streamlit-app
+    name: ai-bug-finder
     plan: free
-    dockerfilePath: ./Dockerfile
-    branch: main
     autoDeploy: true
+    dockerfilePath: Dockerfile
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"

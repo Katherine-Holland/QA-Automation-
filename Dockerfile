@@ -1,31 +1,36 @@
-# Use Python 3.11 slim base image
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-# Prevent prompts from apt and set up environment
-ENV DEBIAN_FRONTEND=noninteractive 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies for Chromium (Playwright)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 libdrm2 libgbm1 \
-    libglib2.0-0 libgtk-3-0 libpangocairo-1.0-0 libpango-1.0-0 libfontconfig1 \
-    libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libxcursor1 \
-    libxss1 libxtst6 libasound2 libexpat1 libdbus-1-3 libdbus-glib-1-2 libxi6 \
-    libx11-xcb1 libxcb1 libxkbcommon0 libffi7 libssl1.1 fonts-liberation libfreetype6 \
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    curl \
+    unzip \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libxkbcommon0 \
+    libgtk-3-0 \
+    libasound2 \
+    libxshmfence1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies (Streamlit & Playwright)
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
+COPY . /app
 
-# Copy application files into the image
-COPY app.py .
-COPY run_tests.py .
-COPY setup.sh .
-RUN chmod +x setup.sh
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Install Playwright browsers (Chromium) via the setup script
-RUN ./setup.sh
+RUN playwright install chromium
 
-# Expose Streamlit's default port (8501) and set Streamlit to use the Render port
 EXPOSE 8501
-CMD streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+
+CMD streamlit run bugfinder_app.py --server.port=$PORT --server.address=0.0.0.0
