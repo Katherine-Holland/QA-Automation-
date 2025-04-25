@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright, expect
+from utils.helpers import dismiss_netflix_popups
 
 def run_tests():
     results = []
@@ -11,6 +12,7 @@ def run_tests():
 
         # ARRANGE: Go to Netflix and go to login
         page.goto("https://netflix.com")
+        dismiss_netflix_popups(page)
         page.locator('a[href="/login"]').click()
 
         # ACT 1: Invalid Email Test
